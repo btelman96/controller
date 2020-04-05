@@ -42,7 +42,7 @@ def setup(robot_config):
         maxSpeed = robot_config.getfloat('sphero_rvr', 'directional_speed')
         turnSpeed = robot_config.getfloat('sphero_rvr', 'turn_speed')
     except:
-        print ("Config [sphero_rvr] not found! Please reset your controller.conf or copy sphero_rvr section from controller.sample.conf")
+        logging.critical("Config [sphero_rvr] not found! Please reset your controller.conf or copy sphero_rvr section from controller.sample.conf")
     if robot_config.getboolean('tts', 'ext_chat'): #ext_chat enabled, add motor commands
         extended_command.add_command('.speed', setSpeed)
         extended_command.add_command('.turn', setSpeed)
