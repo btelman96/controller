@@ -125,8 +125,8 @@ def setup(robot_config):
     global flags
     global delay
     delay = robot_config.getfloat('robot', 'straight_delay')
-    # try:
-    #     run_loop()
-    # except KeyboardInterrupt:
-    #     print("Keyboard Interrupt...")
+    try:
+        run_loop()
+    except KeyboardInterrupt:
+        print("Keyboard Interrupt...")
     
