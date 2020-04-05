@@ -1,138 +1,126 @@
 import sys
 import os
+import time
+import extended_command
+import mod_utils
+import robot_util
 
-import asyncio
+from sphero_sdk import SpheroRvrObserver
+from sphero_sdk import RawMotorModesEnum
 
-from sphero_sdk import SerialAsyncDal
-from sphero_sdk import SpheroRvrAsync
+rvr = SpheroRvrObserver()
 
-current_key_code = -1
-driving_keys = [119, 97, 115, 100, 32]
 maxSpeed = 64
-speed = 0
+turnSpeed = 64
+turnDelay = .4
 heading = 0
-flags = 0
 delay = .5
+init = False
 
-loop = asyncio.get_event_loop()
-rvr = SpheroRvrAsync(
-    dal=SerialAsyncDal(
-        loop
-    )
-)
-
-def keycode_callback(keycode):
-    global current_key_code
-    current_key_code = keycode
-    print("Key code updated: ", str(current_key_code))
+def setup(robot_config):
+    global delay
+    global turnDelay
+    global turnSpeed
+    global maxSpeed
+    delay = robot_config.getfloat('robot', 'straight_delay')
+    turnDelay = robot_config.getfloat('robot', 'turn_delay')
+    try:
+        maxSpeed = robot_config.getfloat('sphero_rvr', 'directional_speed')
+        turnSpeed = robot_config.getfloat('sphero_rvr', 'turn_speed')
+    except:
+        print ("Error in sphero_rvr.py:", sys.exc_info())
+    if robot_config.getboolean('tts', 'ext_chat'): #ext_chat enabled, add motor commands
+        extended_command.add_command('.speed', setSpeed)
+        extended_command.add_command('.turn', setSpeed)
+    rvr.wake()
+    drive(64, 0, .1)
 
 def move(args):
-    global speed
-    global current_key_code
+    global turnSpeed
+    global maxSpeed
+    global turnDelay
     global heading
     command = args['button']['command']
     if command == 'l':
-        keycode_callback(97) # A
+        turn(turnSpeed, 0, turnDelay) #spin left
     if command == 'r':
-        keycode_callback(100) # D
+        turn(turnSpeed, 1, turnDelay) #spin right
     if command == 'f':
-        keycode_callback(119) # W
+        drive(maxSpeed, 0, delay) #forwards
     if command == 'b':
-        keycode_callback(115) # S
+        drive(maxSpeed, 1, delay) #backwards
+    
+    #decrease/increase linear speed
     if command == '+':
-        maxSpeed += 64
+        maxSpeed = maxSpeed + 10
     if command == '-':
-        maxSpeed -= 64
+        maxSpeed = maxSpeed - 10
+    
+    #check and fix bounds
     if maxSpeed > 255:
         maxSpeed = 255
     elif maxSpeed < -255:
         maxSpeed = -255
-    global loop
-    loop.run_until_complete(
-        asyncio.gather(
-            runSingleLoop()
-        )
+
+    #decrease/increase turn speed
+    if command == ']':
+        turnSpeed = turnSpeed + 10
+    if command == '[':
+        turnSpeed = turnSpeed - 10
+
+    #check and fix bounds
+    if turnSpeed > 255:
+        turnSpeed = 255
+    elif turnSpeed < -255:
+        turnSpeed = -255
+
+def stop():
+    #hard stop. Don't coast
+    rvr.raw_motors(
+        left_mode=1,
+        left_speed=0,  # Valid speed values are 0-255
+        right_mode=1,
+        right_speed=0  # Valid speed values are 0-255
     )
 
-async def main():
-    """
-    Runs the main control loop for this demo.  Uses the KeyboardHelper class to read a keypress from the terminal.
-
-    W - Go forward.  Press multiple times to increase speed.
-    A - Decrease heading by -10 degrees with each key press.
-    S - Go reverse. Press multiple times to increase speed.
-    D - Increase heading by +10 degrees with each key press.
-    Spacebar - Reset speed and flags to 0. RVR will coast to a stop
-
-    """
-    global current_key_code
-    global speed
-    global maxSpeed
-    global heading
-    global flags
-    global delay
-
-    await rvr.wake()
-
-    await rvr.reset_yaw()
-
-async def runSingleLoop():
-    if current_key_code == 119:  # W
-        speed = maxSpeed
-        # go forward
-        flags = 0
-    elif current_key_code == 97:  # A
-        heading -= 10
-    elif current_key_code == 115:  # S
-        speed = maxSpeed
-        # go reverse
-        flags = 1
-    elif current_key_code == 100:  # D
-        heading += 10
-    elif current_key_code == 32:  # SPACE
-        # reset speed and flags, but don't modify heading.
-        speed = 0
-        flags = 0
-
-    # check the speed value, and wrap as necessary.
-    if speed > 255:
-        speed = 255
-    elif speed < -255:
-        speed = -255
-
-    # check the heading value, and wrap as necessary.
-    if heading > 359:
-        heading = heading - 359
-    elif heading < 0:
-        heading = 359 + heading
-
-    # reset the key code every loop
-    current_key_code = -1
-
+def drive(speed, mode, delay):
+    rvr.reset_yaw()
     # issue the driving command
-    await rvr.drive_with_heading(speed, heading, flags)
+    rvr.drive_with_heading(speed, 0, mode)
 
-    # sleep for a .5 seconds
-    await asyncio.sleep(delay)
+    # sleep for a {delay} seconds
+    time.sleep(delay)
+    stop()
 
-    await rvr.drive_with_heading(0, heading, 0) #full stop
-
-def run_init():
-    global loop
-    loop.run_until_complete(
-        asyncio.gather(
-            main()
-        )
+def turn(turnSpeed, mode, turnDelay):
+    leftMode = RawMotorModesEnum.off.value
+    rightMode = RawMotorModesEnum.off.value
+    if mode == 0: #left
+        leftMode = RawMotorModesEnum.reverse.value
+        rightMode = RawMotorModesEnum.forward.value
+    if mode == 1: #right
+        leftMode = RawMotorModesEnum.forward.value
+        rightMode = RawMotorModesEnum.reverse.value
+    rvr.raw_motors(
+        left_mode=leftMode,
+        left_speed=turnSpeed,  # Valid speed values are 0-255
+        right_mode=rightMode,
+        right_speed=turnSpeed  # Valid speed values are 0-255
     )
+    time.sleep(turnDelay)
+    stop()
 
-def setup(robot_config):
-    global speed
-    global heading
-    global flags
-    global delay
-    delay = robot_config.getfloat('robot', 'straight_delay')
-    try:
-        run_init()
-    except KeyboardInterrupt:
-        print("Keyboard Interrupt...")
+def setSpeed(command, args):
+    global turnSpeed
+    global maxSpeed
+    if extended_command.is_authed(args['sender']) == 2: # Owner
+        if len(command) >= 2: 
+            try:
+                if command[0] == ".turn":
+                    turnSpeed = int(command[1])
+                if command[0] == ".speed":
+                    maxSpeed = int(command[1])
+            except:
+                print ("Error in sphero_rvr.py:", sys.exc_info())
+                pass
     
