@@ -5,10 +5,24 @@ import extended_command
 import mod_utils
 import robot_util
 
-from sphero_sdk import SpheroRvrObserver
-from sphero_sdk import RawMotorModesEnum
-
-rvr = SpheroRvrObserver()
+try:
+    from sphero_sdk import SpheroRvrObserver
+    from sphero_sdk import RawMotorModesEnum
+except ImportError:
+    logging.critical("You need to install sphero-sdk-raspberrypi-python")
+    logging.critical("Please install sphero-sdk-raspberrypi-python for python and restart this script.")
+    logging.critical("To install: cd /usr/local/src && sudo git clone https://github.com/sphero-inc/sphero-sdk-raspberrypi-python")
+    logging.critical("cd /usr/local/src/sphero-sdk-raspberrypi-python && sudo python setup.py install")
+    logging.info("sphero_rvr running in test mode.")
+    logging.info("Ctrl-C to quit")
+    return
+try:
+    rvr = SpheroRvrObserver()
+except:
+    logging.critical("Unable to initialize Sphero SDK! Make sure you have the follow the Sphero SDK guide at https://github.com/sphero-inc/sphero-sdk-raspberrypi-python for setup!")
+    logging.info("sphero_rvr running in test mode.")
+    logging.info("Ctrl-C to quit")
+    return
 
 maxSpeed = 64
 turnSpeed = 64
@@ -22,18 +36,17 @@ def setup(robot_config):
     global turnDelay
     global turnSpeed
     global maxSpeed
-    delay = robot_config.getfloat('robot', 'straight_delay')
-    turnDelay = robot_config.getfloat('robot', 'turn_delay')
     try:
+        delay = robot_config.getfloat('sphero_rvr', 'straight_delay')
+        turnDelay = robot_config.getfloat('sphero_rvr', 'turn_delay')
         maxSpeed = robot_config.getfloat('sphero_rvr', 'directional_speed')
         turnSpeed = robot_config.getfloat('sphero_rvr', 'turn_speed')
     except:
-        print ("Error in sphero_rvr.py:", sys.exc_info())
+        print ("Config [sphero_rvr] not found! Please reset your controller.conf or copy sphero_rvr section from controller.sample.conf")
     if robot_config.getboolean('tts', 'ext_chat'): #ext_chat enabled, add motor commands
         extended_command.add_command('.speed', setSpeed)
         extended_command.add_command('.turn', setSpeed)
     rvr.wake()
-    drive(64, 0, .1)
 
 def move(args):
     global turnSpeed
