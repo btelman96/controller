@@ -47,6 +47,12 @@ def move(args):
         maxSpeed = 255
     elif maxSpeed < -255:
         maxSpeed = -255
+    global loop
+    loop.run_until_complete(
+        asyncio.gather(
+            runSingleLoop()
+        )
+    )
 
 async def main():
     """
@@ -70,48 +76,48 @@ async def main():
 
     await rvr.reset_yaw()
 
-    while True:
+async def runSingleLoop():
+    if current_key_code == 119:  # W
+        speed = maxSpeed
+        # go forward
+        flags = 0
+    elif current_key_code == 97:  # A
+        heading -= 10
+    elif current_key_code == 115:  # S
+        speed = maxSpeed
+        # go reverse
+        flags = 1
+    elif current_key_code == 100:  # D
+        heading += 10
+    elif current_key_code == 32:  # SPACE
+        # reset speed and flags, but don't modify heading.
+        speed = 0
+        flags = 0
 
-        if current_key_code == 119:  # W
-            speed = maxSpeed
-            # go forward
-            flags = 0
-        elif current_key_code == 97:  # A
-            heading -= 10
-        elif current_key_code == 115:  # S
-            speed = maxSpeed
-            # go reverse
-            flags = 1
-        elif current_key_code == 100:  # D
-            heading += 10
-        elif current_key_code == 32:  # SPACE
-            # reset speed and flags, but don't modify heading.
-            speed = 0
-            flags = 0
+    # check the speed value, and wrap as necessary.
+    if speed > 255:
+        speed = 255
+    elif speed < -255:
+        speed = -255
 
-        # check the speed value, and wrap as necessary.
-        if speed > 255:
-            speed = 255
-        elif speed < -255:
-            speed = -255
+    # check the heading value, and wrap as necessary.
+    if heading > 359:
+        heading = heading - 359
+    elif heading < 0:
+        heading = 359 + heading
 
-        # check the heading value, and wrap as necessary.
-        if heading > 359:
-            heading = heading - 359
-        elif heading < 0:
-            heading = 359 + heading
+    # reset the key code every loop
+    current_key_code = -1
 
-        # reset the key code every loop
-        current_key_code = -1
+    # issue the driving command
+    await rvr.drive_with_heading(speed, heading, flags)
 
-        # issue the driving command
-        await rvr.drive_with_heading(speed, heading, flags)
+    # sleep for a .5 seconds
+    await asyncio.sleep(delay)
 
-        # sleep the infinite loop for a 10th of a second to avoid flooding the serial port.
-        await asyncio.sleep(delay)
+    await rvr.drive_with_heading(0, heading, 0) #full stop
 
-
-def run_loop():
+def run_init():
     global loop
     loop.run_until_complete(
         asyncio.gather(
@@ -126,7 +132,7 @@ def setup(robot_config):
     global delay
     delay = robot_config.getfloat('robot', 'straight_delay')
     try:
-        run_loop()
+        run_init()
     except KeyboardInterrupt:
         print("Keyboard Interrupt...")
     
