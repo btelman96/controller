@@ -12,7 +12,7 @@ except ImportError:
     logging.critical("You need to install sphero-sdk-raspberrypi-python")
     logging.critical("Please install sphero-sdk-raspberrypi-python for python and restart this script.")
     logging.critical("To install: cd /usr/local/src && sudo git clone https://github.com/sphero-inc/sphero-sdk-raspberrypi-python")
-    logging.critical("cd /usr/local/src/sphero-sdk-raspberrypi-python && sudo python setup.py install")
+    logging.critical("cd /usr/local/src/sphero-sdk-raspberrypi-python && sudo python3 setup.py install")
     logging.info("sphero_rvr running in test mode.")
     logging.info("Ctrl-C to quit")
     return
