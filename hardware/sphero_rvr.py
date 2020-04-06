@@ -13,16 +13,12 @@ except ImportError:
     logging.critical("Please install sphero-sdk-raspberrypi-python for python and restart this script.")
     logging.critical("To install: cd /usr/local/src && sudo git clone https://github.com/sphero-inc/sphero-sdk-raspberrypi-python")
     logging.critical("cd /usr/local/src/sphero-sdk-raspberrypi-python && sudo python3 setup.py install")
-    logging.info("sphero_rvr running in test mode.")
-    logging.info("Ctrl-C to quit")
-    return
+    sys.exit()
 try:
     rvr = SpheroRvrObserver()
 except:
     logging.critical("Unable to initialize Sphero SDK! Make sure you have the follow the Sphero SDK guide at https://github.com/sphero-inc/sphero-sdk-raspberrypi-python for setup!")
-    logging.info("sphero_rvr running in test mode.")
-    logging.info("Ctrl-C to quit")
-    return
+    sys.exit()
 
 maxSpeed = 64
 turnSpeed = 64
