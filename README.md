@@ -1,13 +1,13 @@
 ## remo.tv is an open telerobotics platform designed for controling and sharing control of robots online in real time.
-## WARNING: This software is currently under development, so you may encounter frequent issues as updates are made. You can check out the [wiki](https://github.com/remotv/controller/wiki) for a more indepth view of what's currently supported.
+## WARNING: This software is currently under development, so you may encounter frequent issues as updates are made. You can check out the [wiki](https://docs.remo.tv) for a more indepth view of what's currently supported.
 This controller software is designed to run on your robot and will connect with our development server. It's tuned to support Raspberry Pi based robots, however there is extensive support for other hardware configurations.
 
 ## Basic setup
-If this is your first time working with a Raspberry Pi or Linux, we recommend following our [initializtion tutorial](https://github.com/remotv/controller/wiki/Initializing-the-Raspberry-Pi) to get started.
+If this is your first time working with a Raspberry Pi or Linux, we recommend following our [initialization tutorial](https://docs.remo.tv/en/stable/controller/getting_started.html) to get started.
 
 ## Installing remotv control scripts on a Raspberry Pi
 
-If doing things manually isn't your style, we made an [optional guided installation](https://github.com/remotv/controller/wiki/Optional-Guided-Installation-Script) script that handles mostly everything for you.
+If doing things manually isn't your style, we made an [optional guided installation](https://docs.remo.tv/en/stable/controller/guided_installation.html) script that handles mostly everything for you.
 
 The RasPi will need the following things install so it can talk to your motors and talk to the internet. Make sure you don’t get any errors in the console when doing the step below. If you have an issue, you can run this line again, and that will usually fix it!
 
@@ -74,6 +74,7 @@ The RasPi will need the following things install so it can talk to your motors a
      - `serial_board`
      - `telly`
      - `thunderborg`
+     - `megapi_board`
    - Configure your hardwares section. Each hardware type can have their own section it the controller. Look through the file for a section named the same as your hardware controller. If the section exists, read through it and adjust the variable as required.
 
 3. Configure the `[camera]` section
@@ -94,7 +95,7 @@ The RasPi will need the following things install so it can talk to your motors a
      - `espeak`
      - `fesitval`
      - `pico`
-     - Amazon Polly
+     - Amazon Polly (`polly`)
      - `cozmo_tts`
      - `google_cloud`
 
@@ -179,12 +180,13 @@ The following hardware is supported.
 - PiBorg ThunderBorg Motor Driver
 - Pololu Dual MC33926 Motor Driver (experimental)
 - Pololu DRV8835 Dual Motor Driver
+- MegaPi by Makeblock
 
-Missing something?, you can add it, open source! Instructions for adding new hardware can be found [here.](EXTENDING_CONTROLLER.md)
+Missing something? You can add it, open source! Instructions for adding new hardware can be found [here.](https://docs.remo.tv/en/stable/controller/hardware/extending.html)
 
 ## Chat Commands
 
-When `ext_chat` is enabled, the following chat commands are available. To use, just type them into the chat box on your bots page. These chat commands have no effect on how the site behaves, they only affect the bot. There are some functions that duplicate functions on the site. These changes are not saved and are lots on reboot.
+When `ext_chat` is enabled, the following chat commands are available. To use, just type them into the chat box on your bots page. These chat commands have no effect on how the site behaves, they only affect the bot. There are some functions that duplicate functions on the site. These changes are not saved and are lost on reboot.
 
 - `.devmode X` Set dev mode. In dev mode, only the owner can drive. If demode is set to mods, your local mods can also drive [on|off|mods].
 - `.anon control X` Sets if anonymous users can drive your bot [on|off].
@@ -206,8 +208,8 @@ Hardware modules can have their own hardware specific TTS commands.
 
 ## Cozmo
 
-For Anki Cozmo on Mac or Linux, please see the intructions [here](documentation/COZMO_MAC.md).
-For Windows instructions, please see the instructions [here](documentation/COZMO_WIN.md).
+For Anki Cozmo on Mac or Linux, please see the intructions [here](https://docs.remo.tv/en/stable/controller/hardware/cozmo.html).
+For Windows instructions, please see the instructions [here](https://docs.remo.tv/en/stable/controller/hardware/cozmo-win.html).
 
 ## GoPiGo3
 
@@ -242,7 +244,7 @@ Install [DRV8835 Motor Driver library](https://github.com/pololu/drv8835-motor-d
 
 Install [MC33926 Motor Driver library](https://github.com/pololu/dual-mc33926-motor-driver-rpi)
 
-# Check out the [Wiki](https://github.com/remotv/controller/wiki) for more information
+# Check out the [Wiki](https://docs.remo.tv) for more information
 
 # A note about the Raspi Cam Module
 
